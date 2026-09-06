@@ -2,17 +2,30 @@ import sqlite3
 import os
 import json
 
-DB_PATH = os.environ.get("MAGANGHUB_DB_PATH", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "maganghub.db"))
+# Default path – used locally. In Vercel the repo is read‑only, so we open the DB in read‑only mode.
+DB_PATH = os.environ.get(
+    "MAGANGHUB_DB_PATH",
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "maganghub.db")
+)
 
 def get_db_connection():
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH, timeout=30.0)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode = WAL")
-    conn.execute("PRAGMA synchronous = NORMAL")
-    conn.execute("PRAGMA cache_size = -64000")
-    conn.execute("PRAGMA foreign_keys = ON")
-    return conn
+    # Vercel sets the environment variable VERCEL=1
+    if os.getenv("VERCEL"):
+        # Open the bundled DB file in read‑only mode; no journaling or writes.
+        uri = f"file:{DB_PATH}?mode=ro"
+        conn = sqlite3.connect(uri, uri=True, timeout=30.0)
+        conn.row_factory = sqlite3.Row
+        return conn
+    else:
+        # Local development – ensure the directory exists and use write‑able DB.
+        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+        conn = sqlite3.connect(DB_PATH, timeout=30.0)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA journal_mode = WAL")
+        conn.execute("PRAGMA synchronous = NORMAL")
+        conn.execute("PRAGMA cache_size = -64000")
+        conn.execute("PRAGMA foreign_keys = ON")
+        return conn
 
 def init_db():
     conn = get_db_connection()

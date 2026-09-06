@@ -1,15 +1,15 @@
-__pycache__/
-*.py[cod]
-*$py.class
-*.db
-*.db-journal
-*.db-wal
-*.db-shm
-data/*.db*
-.env
-.venv
-env/
-venv/
-*.log
-.DS_Store
-Thumbs.db
+# __pycache__/
+# *.py[cod]
+# *$py.class
+# *.db
+# *.db-journal
+# *.db-wal
+# *.db-shm
+# data/*.db*
+# .env
+# .venv
+# env/
+# venv/
+# *.log
+# .DS_Store
+# Thumbs.db

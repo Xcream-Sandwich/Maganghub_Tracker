@@ -15,6 +15,12 @@ from backend.ai_recommender import extract_text_from_pdf_bytes, analyze_cv_with_
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if os.getenv("VERCEL"):
+        # In the Vercel read‑only environment we cannot write to the DB or spawn background tasks.
+        # Assume the bundled DB is already initialized.
+        yield
+        return
+    # Local/development environment – keep existing behaviour.
     init_db()
     conn = get_db_connection()
     c = conn.cursor()
