@@ -1,19 +1,27 @@
 import sqlite3
 import os
 import json
+import shutil
 
-# Default path – used locally. In Vercel the repo is read‑only, so we open the DB in read‑only mode.
-DB_PATH = os.environ.get(
-    "MAGANGHUB_DB_PATH",
-    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "maganghub.db")
-)
+# Define the DB path. If on Vercel, use a writable copy in /tmp.
+if os.getenv("VERCEL"):
+    # Path to the bundled read‑only DB inside the source tree
+    BUNDLED_DB = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "data",
+        "maganghub.db",
+    )
+    DB_PATH = "/tmp/maganghub.db"
+    # Copy the bundled DB to /tmp if it does not already exist
+    if not os.path.exists(DB_PATH):
+        shutil.copyfile(BUNDLED_DB, DB_PATH)
+else:
+    DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "maganghub.db")
 
 def get_db_connection():
-    # Vercel sets the environment variable VERCEL=1
     if os.getenv("VERCEL"):
-        # Open the bundled DB file in read‑only mode; no journaling or writes.
-        uri = f"file:{DB_PATH}?mode=ro"
-        conn = sqlite3.connect(uri, uri=True, timeout=30.0)
+        # On Vercel, use the writable copy in /tmp
+        conn = sqlite3.connect(DB_PATH, timeout=30.0)
         conn.row_factory = sqlite3.Row
         return conn
     else:
