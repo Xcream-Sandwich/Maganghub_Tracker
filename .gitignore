@@ -1,15 +1,8 @@
-# __pycache__/
-# *.py[cod]
-# *$py.class
-# *.db
-# *.db-journal
-# *.db-wal
-# *.db-shm
-# data/*.db*
-# .env
-# .venv
-# env/
-# venv/
-# *.log
-# .DS_Store
-# Thumbs.db
+__pycache__/
+*.py[cod]
+*$py.class
+# SQLite DB files – ignore large DB (will be loaded from external storage)
+data/maganghub.db
+*.log
+.DS_Store
+Thumbs.db
