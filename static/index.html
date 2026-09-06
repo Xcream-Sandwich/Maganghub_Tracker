@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MagangHub Tracker — Mirror Cepat & Cerdas Lowongan Kemnaker</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Leaflet Map CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="/static/style.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+
+  <!-- Navigation Bar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-100">
+          <i data-lucide="briefcase" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <a href="/" class="font-bold text-lg text-slate-900 tracking-tight flex items-center gap-2">
+            MagangHub <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-semibold uppercase">Tracker</span>
+          </a>
+          <p class="text-[11px] text-slate-500">Mirror Resmi Kemnaker &bull; Super Cepat &bull; Multi-Select Filter</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="/cv-matcher" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 shadow-sm shadow-indigo-200 transition-all">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          Rekomendasi AI (CV)
+        </a>
+        <button id="btn-sync" title="Sinkronisasi data terbaru" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-200 transition-colors">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5" id="sync-icon"></i>
+          <span id="sync-btn-text">Sync</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Attribution Banner -->
+  <div class="bg-indigo-50/80 border-b border-indigo-100/60 px-4 py-2 text-xs text-indigo-900">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <i data-lucide="info" class="w-4 h-4 text-indigo-600 shrink-0"></i>
+        <span>
+          Data bersumber dari <strong>Program Magang Kemnaker RI</strong>. Dilengkapi kalkulasi <strong>peluang diterima realistis</strong> & multi-select filter.
+        </span>
+      </div>
+      <div id="sync-meta-badge" class="text-[11px] text-indigo-600 bg-white/80 px-2 py-0.5 rounded border border-indigo-200">
+        Memuat status data...
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+    <!-- Sidebar Filters -->
+    <aside class="lg:col-span-1 space-y-5">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm sticky top-20">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div class="flex items-center gap-2 font-semibold text-slate-900 text-sm">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4 text-indigo-600"></i>
+            Filter Lowongan
+          </div>
+          <button id="btn-reset-filters" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Reset Semua</button>
+        </div>
+
+        <form id="filter-form" class="space-y-4 pt-3 text-xs">
+          
+          <!-- Filter: Provinsi (Multi-select) -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="font-medium text-slate-700">Provinsi</label>
+              <span id="badge-count-prov" class="text-[10px] text-indigo-600 font-semibold hidden">0 terpilih</span>
+            </div>
+            <div class="relative">
+              <button type="button" id="dropdown-btn-prov" class="w-full rounded-lg border border-slate-200 bg-slate-50 text-slate-800 p-2 text-xs flex items-center justify-between hover:bg-slate-100 transition-colors">
+                <span id="prov-selected-label" class="truncate">Pilih Provinsi...</span>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+              </button>
+              <div id="dropdown-menu-prov" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-20 max-h-52 overflow-y-auto p-2 space-y-1">
+                <input type="text" id="search-prov-input" placeholder="Cari provinsi..." class="w-full px-2 py-1 mb-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-indigo-500">
+                <div id="prov-checkbox-list" class="space-y-1"></div>
+              </div>
+            </div>
+            <div id="prov-selected-chips" class="flex flex-wrap gap-1 mt-1.5"></div>
+          </div>
+
+          <!-- Filter: Kota / Kabupaten (Multi-select) -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="font-medium text-slate-700">Kota / Kabupaten</label>
+              <span id="badge-count-city" class="text-[10px] text-indigo-600 font-semibold hidden">0 terpilih</span>
+            </div>
+            <div class="relative">
+              <button type="button" id="dropdown-btn-city" class="w-full rounded-lg border border-slate-200 bg-slate-50 text-slate-800 p-2 text-xs flex items-center justify-between hover:bg-slate-100 transition-colors">
+                <span id="city-selected-label" class="truncate">Pilih Kota/Kabupaten...</span>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+              </button>
+              <div id="dropdown-menu-city" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-20 max-h-52 overflow-y-auto p-2 space-y-1">
+                <input type="text" id="search-city-input" placeholder="Cari kota..." class="w-full px-2 py-1 mb-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-indigo-500">
+                <div id="city-checkbox-list" class="space-y-1"></div>
+              </div>
+            </div>
+            <div id="city-selected-chips" class="flex flex-wrap gap-1 mt-1.5"></div>
+          </div>
+
+          <!-- Filter: Jenjang Pendidikan (Multi-Select) -->
+          <div>
+            <label class="block font-medium text-slate-700 mb-1.5">Jenjang Pendidikan</label>
+            <div class="grid grid-cols-2 gap-1.5" id="edu-options">
+              <label class="flex items-center gap-2 p-1.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 text-[11px]">
+                <input type="checkbox" name="edu" value="Diploma" class="accent-indigo-600 rounded">
+                <span>Diploma</span>
+              </label>
+              <label class="flex items-center gap-2 p-1.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 text-[11px]">
+                <input type="checkbox" name="edu" value="Sarjana" class="accent-indigo-600 rounded">
+                <span>Sarjana</span>
+              </label>
+              <label class="flex items-center gap-2 p-1.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 text-[11px]">
+                <input type="checkbox" name="edu" value="Magister" class="accent-indigo-600 rounded">
+                <span>Magister</span>
+              </label>
+              <label class="flex items-center gap-2 p-1.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 text-[11px]">
+                <input type="checkbox" name="edu" value="SMK" class="accent-indigo-600 rounded">
+                <span>SMK / SMA</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Filter: Jenis Instansi (Multi-Select) -->
+          <div>
+            <label class="block font-medium text-slate-700 mb-1.5">Jenis Instansi</label>
+            <div class="space-y-1.5" id="org-type-options">
+              <label class="flex items-center gap-2 p-1.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 text-[11px]">
+                <input type="checkbox" name="org_type" value="Perusahaan" class="accent-indigo-600 rounded">
+                <span>Perusahaan (Swasta / BUMN)</span>
+              </label>
+              <label class="flex items-center gap-2 p-1.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 text-[11px]">
+                <input type="checkbox" name="org_type" value="Kementerian/Lembaga" class="accent-indigo-600 rounded">
+                <span>Kementerian / Lembaga (Pemerintah)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Filter: Program Studi (Bisa beberapa dipisah koma atau tags) -->
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Program Studi / Jurusan</label>
+            <input type="text" id="filter-study" placeholder="Cth: Informatika, Akuntansi, Hukum..." class="w-full rounded-lg border-slate-200 bg-slate-50 text-slate-800 p-2 text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none">
+            <span class="text-[10px] text-slate-400 mt-0.5 block">Bisa masukkan beberapa jurusan sekaligus</span>
+          </div>
+
+          <!-- Filter: Kecamatan (Best Effort) -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="font-medium text-slate-700">Kecamatan</label>
+              <span class="text-[10px] text-slate-400">ekstraksi alamat</span>
+            </div>
+            <input type="text" id="filter-district" placeholder="Misal: Coblong, Sukajadi, Menteng..." class="w-full rounded-lg border-slate-200 bg-slate-50 text-slate-800 p-2 text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none">
+          </div>
+
+          <!-- Filter: Nama Instansi Spesifik -->
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Nama Perusahaan / Instansi</label>
+            <input type="text" id="filter-company" placeholder="Cth: Telkom, Mandiri, Pertamina..." class="w-full rounded-lg border-slate-200 bg-slate-50 text-slate-800 p-2 text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none">
+          </div>
+
+          <!-- Filter: Minimum Kuota -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="font-medium text-slate-700">Minimal Kuota Diterima</label>
+              <span id="min-quota-val" class="font-bold text-indigo-600">0</span>
+            </div>
+            <input type="range" id="filter-min-quota" min="0" max="30" step="1" value="0" class="w-full accent-indigo-600">
+            <div class="flex justify-between text-[10px] text-slate-400">
+              <span>Bebas</span>
+              <span>10</span>
+              <span>20</span>
+              <span>30+</span>
+            </div>
+          </div>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Main Listing Area -->
+    <section class="lg:col-span-3 space-y-4">
+
+      <!-- Search Bar & Sorting Toolbar -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center gap-3">
+        <div class="relative flex-1 w-full">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+          <input type="text" id="search-keyword" placeholder="Cari posisi pekerjaan, deskripsi tugas, atau nama instansi..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all">
+        </div>
+
+        <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+          <label class="text-xs font-medium text-slate-500 whitespace-nowrap">Urutkan:</label>
+          <select id="sort-select" class="rounded-xl border-slate-200 bg-slate-50 text-slate-800 py-2 px-3 text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none">
+            <option value="terbaru">Terbaru (Published)</option>
+            <option value="peluang">Peluang Tertinggi ✨</option>
+            <option value="kuota">Kuota Terbanyak</option>
+            <option value="kompetisi">Pelamar Paling Sedikit</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Active Filter Chips & Counter -->
+      <div class="flex flex-wrap items-center justify-between gap-2 px-1">
+        <div class="flex flex-wrap items-center gap-1.5" id="active-chips">
+          <!-- Active filter chips -->
+        </div>
+        <div class="text-xs text-slate-500 font-medium">
+          Ditemukan: <span id="results-count" class="font-bold text-slate-800">0</span> lowongan
+        </div>
+      </div>
+
+      <!-- Vacancy Cards Grid -->
+      <div id="vacancy-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Cards -->
+      </div>
+
+      <!-- Pagination Controls -->
+      <div id="pagination" class="flex items-center justify-center gap-2 pt-4 pb-8">
+        <!-- Pagination buttons -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Vacancy Detail Modal -->
+  <div id="detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 flex flex-col relative">
+      
+      <!-- Modal Header -->
+      <div class="p-6 border-b border-slate-100 flex items-start justify-between sticky top-0 bg-white/95 backdrop-blur z-10">
+        <div class="flex items-start gap-4">
+          <div id="modal-company-logo" class="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center p-2 shrink-0">
+            <i data-lucide="building-2" class="w-6 h-6 text-indigo-600"></i>
+          </div>
+          <div>
+            <span id="modal-org-type" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600"></span>
+            <h2 id="modal-title" class="text-lg sm:text-xl font-bold text-slate-900 mt-1 leading-snug"></h2>
+            <p id="modal-company-name" class="text-xs sm:text-sm font-medium text-indigo-600"></p>
+          </div>
+        </div>
+        <button id="btn-close-modal" class="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 space-y-6 text-xs sm:text-sm text-slate-700">
+
+        <!-- Stats Bar -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+          <div>
+            <p class="text-[11px] text-slate-500">Kuota Disetujui</p>
+            <p id="modal-approved-qty" class="text-base font-bold text-slate-800">-</p>
+          </div>
+          <div>
+            <p class="text-[11px] text-slate-500">Total Pelamar</p>
+            <p id="modal-applications" class="text-base font-bold text-slate-800">-</p>
+          </div>
+          <div>
+            <p class="text-[11px] text-slate-500" title="Skor estimasi peluang diterima berdasarkan kuota vs pelamar">Peluang Diterima ✨</p>
+            <p id="modal-opportunity" class="text-base font-bold text-emerald-600">-</p>
+          </div>
+          <div>
+            <p class="text-[11px] text-slate-500">Sisa Kuota Bersih</p>
+            <p id="modal-remaining-slot" class="text-base font-bold text-indigo-600">-</p>
+          </div>
+        </div>
+
+        <!-- UMK Card Reference -->
+        <div id="umk-card-container" class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/80 rounded-2xl p-4">
+          <div class="flex items-start gap-3">
+            <div class="p-2 rounded-xl bg-emerald-500 text-white shrink-0 shadow-sm shadow-emerald-200">
+              <i data-lucide="coins" class="w-5 h-5"></i>
+            </div>
+            <div class="space-y-1 flex-1">
+              <div class="flex items-center justify-between">
+                <h4 class="font-semibold text-emerald-950 text-xs sm:text-sm flex items-center gap-1.5">
+                  Estimasi Acuan UMK / UMP Wilayah
+                  <span id="umk-badge-year" class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-200 text-emerald-800 font-bold">2026</span>
+                </h4>
+                <span id="umk-amount" class="text-sm sm:text-base font-extrabold text-emerald-700"></span>
+              </div>
+              <p id="umk-area-name" class="text-xs font-medium text-emerald-900"></p>
+              
+              <div class="mt-2 pt-2 border-t border-emerald-200/60 text-[11px] text-emerald-800/90 leading-relaxed">
+                <strong>⚠️ PENTING / DISCLAIMER:</strong> Program Magang Nasional Kemnaker memberikan <strong>uang saku</strong> (bukan gaji formal). Angka di atas HANYA estimasi standar upah minimum wilayah kerja sebagai acuan biaya hidup, <u>bukan</u> nominal uang saku magang resmi.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Job Details Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <div>
+              <h4 class="font-semibold text-slate-900 mb-1 flex items-center gap-1.5 text-xs">
+                <i data-lucide="graduation-cap" class="w-4 h-4 text-indigo-600"></i>
+                Jenjang Pendidikan
+              </h4>
+              <div id="modal-edu-levels" class="flex flex-wrap gap-1"></div>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-900 mb-1 flex items-center gap-1.5 text-xs">
+                <i data-lucide="book-open" class="w-4 h-4 text-indigo-600"></i>
+                Program Studi yang Diterima
+              </h4>
+              <div id="modal-study-programs" class="flex flex-wrap gap-1 max-h-28 overflow-y-auto pr-1"></div>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div>
+              <h4 class="font-semibold text-slate-900 mb-1 flex items-center gap-1.5 text-xs">
+                <i data-lucide="calendar" class="w-4 h-4 text-indigo-600"></i>
+                Hari Kerja & Seleksi
+              </h4>
+              <p id="modal-working-days" class="text-xs text-slate-600"></p>
+              <p id="modal-interview-types" class="text-xs text-slate-600 mt-0.5"></p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-900 mb-1 flex items-center gap-1.5 text-xs">
+                <i data-lucide="map-pin" class="w-4 h-4 text-indigo-600"></i>
+                Lokasi Penempatan
+              </h4>
+              <p id="modal-location" class="text-xs text-slate-600 leading-relaxed"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Task Description -->
+        <div>
+          <h4 class="font-semibold text-slate-900 mb-2 flex items-center gap-1.5 text-xs sm:text-sm">
+            <i data-lucide="file-text" class="w-4 h-4 text-indigo-600"></i>
+            Deskripsi Tugas & Pekerjaan
+          </h4>
+          <div id="modal-task-desc" class="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs sm:text-sm leading-relaxed whitespace-pre-line text-slate-700 max-h-60 overflow-y-auto"></div>
+        </div>
+
+        <!-- Map Leaflet -->
+        <div id="modal-map-container" class="space-y-2 hidden">
+          <h4 class="font-semibold text-slate-900 flex items-center gap-1.5 text-xs">
+            <i data-lucide="navigation" class="w-4 h-4 text-indigo-600"></i>
+            Peta Lokasi Penempatan
+          </h4>
+          <div id="modal-map" class="w-full h-48 rounded-2xl border border-slate-200 z-0"></div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/50">
+        <div class="text-[11px] text-slate-600 text-center sm:text-left">
+          Dipublikasikan: <span id="modal-pub-date" class="font-medium text-slate-700"></span>
+        </div>
+        <a id="modal-official-link" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-200 transition-all text-xs">
+          <span>Lamar di Web Resmi Kemnaker</span>
+          <i data-lucide="external-link" class="w-4 h-4"></i>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-600">
+    <div class="max-w-7xl mx-auto px-4 space-y-1">
+      <p>MagangHub Tracker — Mirror Cerdas Lowongan Kerja & Magang Nasional Kemnaker RI.</p>
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

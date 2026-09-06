@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rekomendasi AI Bebas Provider dari CV — MagangHub Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/static/style.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/" class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors">
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </a>
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center text-white">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-base text-slate-900 leading-none">Rekomendasi AI CV (Multi-Provider)</h1>
+            <p class="text-[11px] text-slate-500 mt-0.5">Mendukung Claude, OpenAI, Gemini, DeepSeek, Groq, dll.</p>
+          </div>
+        </div>
+      </div>
+      <a href="/" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800">Kembali ke Pencarian &rarr;</a>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full space-y-8">
+
+    <!-- Hero Banner -->
+    <div class="bg-gradient-to-r from-violet-900 via-indigo-900 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+      <div class="relative z-10 max-w-2xl space-y-3">
+        <span class="px-3 py-1 rounded-full bg-white/10 text-violet-200 text-xs font-semibold border border-white/10 inline-flex items-center gap-1.5">
+          <i data-lucide="cpu" class="w-3.5 h-3.5 text-amber-300"></i> Bebas Ganti Provider AI Sesuka Anda Kapan Saja
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Cocokkan CV Magang dengan Model AI Pilihan Anda</h2>
+        <p class="text-xs sm:text-sm text-violet-100 leading-relaxed">
+          Pilih engine AI yang Anda punya: <strong>Anthropic Claude, OpenAI (GPT-4o), Google Gemini, DeepSeek, Groq, OpenRouter</strong>, atau endpoint custom sendiri.
+        </p>
+        <div class="pt-2 flex items-center gap-2 text-[11px] text-violet-200/90">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+          <span>Privasi terjaga: File PDF CV hanya diproses sementara di memori dan tidak disimpan di disk server.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload & AI Config Card -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
+      
+      <form id="cv-form" class="space-y-6">
+        
+        <!-- AI Provider Switcher -->
+        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-2">
+              <i data-lucide="settings-2" class="w-4 h-4 text-indigo-600"></i>
+              Konfigurasi Provider AI
+            </h3>
+            <span class="text-[10px] text-slate-400">Bisa disimpan di browser (localStorage)</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div>
+              <label class="block font-medium text-slate-700 mb-1">Pilih Provider AI</label>
+              <select id="ai-provider" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+                <option value="anthropic">Anthropic Claude (Claude 3.5 Sonnet)</option>
+                <option value="openai">OpenAI (GPT-4o / GPT-4o-mini)</option>
+                <option value="gemini">Google Gemini (Gemini 1.5 Flash)</option>
+                <option value="deepseek">DeepSeek (deepseek-chat)</option>
+                <option value="groq">Groq (Llama 3.3 70B Fast)</option>
+                <option value="openrouter">OpenRouter (Multi Model)</option>
+                <option value="custom">Custom Endpoint (OpenAI Compatible)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-medium text-slate-700 mb-1">Model Name (Opsional)</label>
+              <input type="text" id="ai-model-input" placeholder="Otomatis sesuai provider default" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+          </div>
+
+          <div class="text-xs space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="block font-medium text-slate-700">API Key Provider Terpilih</label>
+              <span id="api-key-hint" class="text-[10px] text-indigo-600">sk-ant-...</span>
+            </div>
+            <input type="password" id="api-key-input" placeholder="Masukkan API Key provider..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+
+          <!-- Custom Base URL (shown when provider == custom) -->
+          <div id="custom-url-box" class="hidden text-xs space-y-1">
+            <label class="block font-medium text-slate-700">Custom Base URL (Chat Completions)</label>
+            <input type="text" id="custom-url-input" placeholder="https://your-api.com/v1/chat/completions" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+
+        <!-- File Dropzone -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-2">Unggah Dokumen CV (PDF)</label>
+          <div id="dropzone" class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center hover:border-indigo-500 hover:bg-indigo-50/20 transition-all cursor-pointer group">
+            <input type="file" id="cv-file-input" accept=".pdf" class="hidden">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="file-up" class="w-6 h-6"></i>
+            </div>
+            <p id="file-chosen-text" class="text-sm font-semibold text-slate-800">Klik untuk memilih file PDF CV atau seret ke sini</p>
+            <p class="text-xs text-slate-400 mt-1">Maksimum ukuran file: 10MB</p>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-submit-cv" class="w-full py-3 px-6 rounded-xl font-bold text-sm text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-200 transition-all flex items-center justify-center gap-2">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          <span id="btn-text">Mulai Analisis & Rekomendasi</span>
+        </button>
+      </form>
+
+      <!-- Loading State -->
+      <div id="loading-state" class="hidden py-12 text-center space-y-3">
+        <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-indigo-600 border-t-transparent"></div>
+        <p class="text-sm font-semibold text-slate-800">Menghubungi Model AI & Menganalisis Profil CV...</p>
+        <p class="text-xs text-slate-500">Mencocokkan keahlian dan menghitung peluang keberhasilan magang.</p>
+      </div>
+
+    </div>
+
+    <!-- Extracted Profile Result -->
+    <div id="profile-container" class="hidden bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <i data-lucide="user-check" class="w-5 h-5 text-indigo-600"></i>
+          Profil CV Hasil Ekstraksi
+        </h3>
+        <span id="ai-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          AI Terhubung
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+        <div class="p-4 bg-slate-50 rounded-2xl">
+          <span class="text-slate-400 block font-medium mb-1">Jenjang & Jurusan</span>
+          <p id="prof-edu" class="font-bold text-slate-800 text-sm"></p>
+          <div id="prof-progs" class="flex flex-wrap gap-1 mt-2"></div>
+        </div>
+
+        <div class="p-4 bg-slate-50 rounded-2xl">
+          <span class="text-slate-400 block font-medium mb-1">Skills Terdeteksi</span>
+          <div id="prof-skills" class="flex flex-wrap gap-1 mt-1"></div>
+        </div>
+
+        <div class="p-4 bg-slate-50 rounded-2xl">
+          <span class="text-slate-400 block font-medium mb-1">Minat Karir</span>
+          <div id="prof-interests" class="flex flex-wrap gap-1 mt-1"></div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-indigo-50/50 rounded-2xl text-xs text-indigo-950 border border-indigo-100">
+        <span class="font-semibold block mb-1">Ringkasan AI:</span>
+        <p id="prof-summary" class="leading-relaxed"></p>
+      </div>
+    </div>
+
+    <!-- Recommendations Result -->
+    <div id="recommendations-container" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="font-bold text-slate-900 text-lg sm:text-xl flex items-center gap-2">
+            <i data-lucide="award" class="w-6 h-6 text-amber-500"></i>
+            Rekomendasi Lowongan Paling Cocok
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5">Diurutkan berdasarkan kesesuaian profil dan rasio peluang diterima</p>
+        </div>
+        <span id="rec-count" class="text-xs font-semibold px-3 py-1 rounded-full bg-slate-200 text-slate-700">0 Lowongan</span>
+      </div>
+
+      <div id="rec-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Rendered cards -->
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    const providerSelect = document.getElementById('ai-provider');
+    const customUrlBox = document.getElementById('custom-url-box');
+    const apiKeyHint = document.getElementById('api-key-hint');
+    const apiKeyInput = document.getElementById('api-key-input');
+    const modelInput = document.getElementById('ai-model-input');
+    const customUrlInput = document.getElementById('custom-url-input');
+
+    // Load saved settings
+    const savedProvider = localStorage.getItem('mhub_ai_provider');
+    if (savedProvider) providerSelect.value = savedProvider;
+    const savedKey = localStorage.getItem('mhub_ai_key_' + providerSelect.value);
+    if (savedKey) apiKeyInput.value = savedKey;
+    const savedModel = localStorage.getItem('mhub_ai_model_' + providerSelect.value);
+    if (savedModel) modelInput.value = savedModel;
+    const savedUrl = localStorage.getItem('mhub_ai_url');
+    if (savedUrl) customUrlInput.value = savedUrl;
+
+    function updateProviderUI() {
+      const p = providerSelect.value;
+      if (p === 'custom') {
+        customUrlBox.classList.remove('hidden');
+        apiKeyHint.innerText = 'Custom Key';
+      } else {
+        customUrlBox.classList.add('hidden');
+        if (p === 'anthropic') apiKeyHint.innerText = 'sk-ant-...';
+        else if (p === 'openai') apiKeyHint.innerText = 'sk-...';
+        else if (p === 'gemini') apiKeyHint.innerText = 'AIzaSy...';
+        else if (p === 'deepseek') apiKeyHint.innerText = 'sk-...';
+        else if (p === 'groq') apiKeyHint.innerText = 'gsk_...';
+        else if (p === 'openrouter') apiKeyHint.innerText = 'sk-or-...';
+      }
+
+      // Load key for this provider
+      apiKeyInput.value = localStorage.getItem('mhub_ai_key_' + p) || '';
+      modelInput.value = localStorage.getItem('mhub_ai_model_' + p) || '';
+    }
+
+    providerSelect.addEventListener('change', () => {
+      localStorage.setItem('mhub_ai_provider', providerSelect.value);
+      updateProviderUI();
+    });
+
+    updateProviderUI();
+
+    // Dropzone
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('cv-file-input');
+    const fileChosenText = document.getElementById('file-chosen-text');
+    let selectedFile = null;
+
+    dropzone.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        selectedFile = e.target.files[0];
+        fileChosenText.innerHTML = `<strong>${selectedFile.name}</strong> (${(selectedFile.size / 1024).toFixed(1)} KB)`;
+      }
+    });
+
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('border-indigo-500', 'bg-indigo-50/30');
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('border-indigo-500', 'bg-indigo-50/30');
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('border-indigo-500', 'bg-indigo-50/30');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        selectedFile = e.dataTransfer.files[0];
+        fileInput.files = e.dataTransfer.files;
+        fileChosenText.innerHTML = `<strong>${selectedFile.name}</strong> (${(selectedFile.size / 1024).toFixed(1)} KB)`;
+      }
+    });
+
+    // Form submit
+    document.getElementById('cv-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!selectedFile) {
+        alert('Silakan pilih file PDF CV terlebih dahulu.');
+        return;
+      }
+
+      const provider = providerSelect.value;
+      const apiKey = apiKeyInput.value.trim();
+      const modelName = modelInput.value.trim();
+      const customUrl = customUrlInput.value.trim();
+
+      // Save to localStorage for convenience
+      if (apiKey) localStorage.setItem('mhub_ai_key_' + provider, apiKey);
+      if (modelName) localStorage.setItem('mhub_ai_model_' + provider, modelName);
+      if (customUrl) localStorage.setItem('mhub_ai_url', customUrl);
+
+      const formData = new FormData();
+      formData.append('cv_file', selectedFile);
+      formData.append('provider', provider);
+      if (apiKey) formData.append('api_key', apiKey);
+      if (modelName) formData.append('model_name', modelName);
+      if (customUrl) formData.append('base_url', customUrl);
+
+      const btn = document.getElementById('btn-submit-cv');
+      const loading = document.getElementById('loading-state');
+      const profContainer = document.getElementById('profile-container');
+      const recContainer = document.getElementById('recommendations-container');
+
+      btn.disabled = true;
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
+      loading.classList.remove('hidden');
+      profContainer.classList.add('hidden');
+      recContainer.classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/ai/match-cv', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Gagal memproses CV');
+        }
+
+        const data = await res.json();
+        renderResults(data);
+      } catch (err) {
+        alert('Terjadi kesalahan: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        loading.classList.add('hidden');
+      }
+    });
+
+    function renderResults(data) {
+      const p = data.profile;
+      const recs = data.recommendations;
+
+      document.getElementById('prof-edu').innerText = p.education_level || 'Sarjana';
+      document.getElementById('prof-progs').innerHTML = (p.study_programs || []).map(pr => `<span class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 text-[11px] font-medium">${pr}</span>`).join('');
+      document.getElementById('prof-skills').innerHTML = (p.skills || []).map(sk => `<span class="px-2 py-0.5 rounded bg-slate-200 text-slate-800 text-[11px]">${sk}</span>`).join('');
+      document.getElementById('prof-interests').innerHTML = (p.career_interests || []).map(ci => `<span class="px-2 py-0.5 rounded bg-violet-100 text-violet-800 text-[11px]">${ci}</span>`).join('');
+      document.getElementById('prof-summary').innerText = p.summary || '-';
+
+      const provName = data.provider.toUpperCase();
+      document.getElementById('ai-badge').innerText = data.has_ai_key ? `${provName} AI Matcher` : 'Offline Matcher';
+      document.getElementById('profile-container').classList.remove('hidden');
+
+      document.getElementById('rec-count').innerText = `${recs.length} Lowongan Terpilih`;
+      const recList = document.getElementById('rec-list');
+      
+      recList.innerHTML = recs.map(r => {
+        const v = r.vacancy;
+        const quota = v.approved_quantity || 1;
+        const loc = [v.city_name, v.province_name].filter(Boolean).join(', ') || 'Indonesia';
+        const opp = v.real_opportunity_score || 85;
+
+        return `
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all flex flex-col justify-between space-y-4">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Kecocokan Profil: ${r.score}%
+                </span>
+                <span class="text-xs text-slate-500">Peluang: <strong class="text-emerald-600 font-bold">${opp}%</strong> (Kuota: ${quota})</span>
+              </div>
+
+              <h4 class="font-bold text-slate-900 text-sm sm:text-base leading-snug">
+                ${v.position_name}
+              </h4>
+              <p class="text-xs font-semibold text-slate-600">${v.organizer_name}</p>
+              <p class="text-[11px] text-slate-500 flex items-center gap-1">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i>
+                ${loc}
+              </p>
+
+              <!-- Reason Box -->
+              <div class="p-3 rounded-xl bg-violet-50/60 border border-violet-100 text-xs text-violet-950 leading-relaxed">
+                <strong class="text-violet-900">Alasan Rekomendasi:</strong> ${r.reason}
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+              <a href="${v.url || `https://maganghub.kemnaker.go.id/lowongan/${v.id}`}" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+                <span>Lihat Detail Resmi Kemnaker</span>
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('recommendations-container').classList.remove('hidden');
+      lucide.createIcons();
+      window.scrollTo({ top: document.getElementById('profile-container').offsetTop - 80, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
