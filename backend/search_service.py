@@ -40,8 +40,8 @@ def search_vacancies(
     if keyword and keyword.strip():
         kw = keyword.strip()
         cleaned = "".join([c if c.isalnum() or c.isspace() else " " for c in kw]).strip()
-        if cleaned:
-            tokens = cleaned.split()
+        tokens = cleaned.split() if cleaned else []
+        if tokens:
             fts_query = " ".join([f'"{tok}"*' for tok in tokens])
             conditions.append("v.id IN (SELECT id FROM vacancies_fts WHERE vacancies_fts MATCH ?)")
             params.append(fts_query)

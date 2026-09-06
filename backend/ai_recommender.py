@@ -227,7 +227,11 @@ def match_and_rank_vacancies(
         FROM vacancies
         ORDER BY published_at DESC LIMIT 40
         """)
-        candidates.extend([dict(r) for r in cursor.fetchall()])
+        existing_ids = {c["id"] for c in candidates}
+        for r in cursor.fetchall():
+            d = dict(r)
+            if d["id"] not in existing_ids:
+                candidates.append(d)
 
     conn.close()
 

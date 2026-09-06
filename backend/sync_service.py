@@ -9,7 +9,9 @@ from backend.database import get_db_connection
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
-_sync_lock = False
+import threading
+
+_sync_lock = threading.Lock()
 
 INDEX_URL = "https://maganghab.my.id/data/batch-2/lowongan-index.json"
 CHUNK_BASE_URL = "https://maganghab.my.id/data/batch-2/"
@@ -67,21 +69,19 @@ def extract_district(address):
         name = match.group(1).strip()
         name = re.sub(r'^(?:desa|kelurahan)\s+', '', name, flags=re.IGNORECASE).strip()
         # Clean trailing noise
-        name = re.sub(r'\s+(?:rt|rw|no|jl|kel).*$', '', name, flags=re.IGNORECASE).strip()
+        name = re.sub(r'\s+(?:rt|rw|no|jl|kel) .*$', '', name, flags=re.IGNORECASE).strip()
         if len(name) >= 3 and len(name) <= 35:
             return name.title()
     return None
 
 def sync_all(force=False, max_chunks=None):
-    global _sync_lock
-    if _sync_lock:
+    if not _sync_lock.acquire(blocking=False):
         logger.info("Sinkronisasi sudah sedang berjalan, lewati trigger baru.")
         return {"status": "in_progress", "message": "Sinkronisasi sedang berjalan."}
-    _sync_lock = True
     try:
         return _do_sync_all(force=force, max_chunks=max_chunks)
     finally:
-        _sync_lock = False
+        _sync_lock.release()
 
 def _do_sync_all(force=False, max_chunks=None):
     conn = get_db_connection()

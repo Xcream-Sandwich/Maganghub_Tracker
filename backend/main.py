@@ -51,15 +51,21 @@ def health():
 
 @app.get("/api/meta")
 def get_metadata():
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute("SELECT key, value, updated_at FROM sync_meta")
-    meta = {r["key"]: {"value": r["value"], "updated_at": r["updated_at"]} for r in c.fetchall()}
-    c.execute("SELECT COUNT(*) FROM vacancies")
-    total_vacancies = c.fetchone()[0]
-    c.execute("SELECT COUNT(*) FROM companies")
-    total_companies = c.fetchone()[0]
-    conn.close()
+    try:
+        conn = get_db_connection()
+        c = conn.cursor()
+        c.execute("SELECT key, value, updated_at FROM sync_meta")
+        meta = {r["key"]: {"value": r["value"], "updated_at": r["updated_at"]} for r in c.fetchall()}
+        c.execute("SELECT COUNT(*) FROM vacancies")
+        total_vacancies = c.fetchone()[0]
+        c.execute("SELECT COUNT(*) FROM companies")
+        total_companies = c.fetchone()[0]
+        conn.close()
+    except Exception as e:
+        return JSONResponse(
+            status_code=503,
+            content={"error": "Database tidak tersedia sementara, coba lagi.", "detail": str(e)}
+        )
     return {
         "sync_meta": meta,
         "total_vacancies": total_vacancies,
@@ -132,6 +138,8 @@ async def match_cv_endpoint(
         cv_text = extract_text_from_pdf_bytes(content)
         if not cv_text.strip():
             raise HTTPException(status_code=400, detail="Tidak dapat mengekstrak teks dari PDF (dokumen mungkin scan gambar murni tanpa teks OCR).")
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Gagal membaca PDF: {str(e)}")
 
